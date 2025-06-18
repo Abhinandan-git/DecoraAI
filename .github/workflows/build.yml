@@ -1,0 +1,24 @@
+name: Build and Push changes to Docker Hub
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client/Dockerfile'
+      - 'server/Dockerfile'
+
+jobs:
+  publish_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: build image
+        run: |
+          docker build -t abhinandanjain/decoraAI:client_latest ./client/
+          docker build -t abhinandanjain/decoraAI:server_latest ./server/
+      - name: push image
+        run: |
+          docker login -u abhinandanjain -p ${{ secrets.DOCKER_HUB_LOGIN }}
+          docker push abhinandanjain/decoraAI:client_latest
+          docker push abhinandanjain/decoraAI:server_latest
