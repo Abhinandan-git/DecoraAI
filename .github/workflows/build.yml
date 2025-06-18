@@ -2,10 +2,9 @@ name: Build and Push changes to Docker Hub
 on:
   push:
     branches:
-      - main
+      - feat-*
     paths:
-      - 'client/Dockerfile'
-      - 'server/Dockerfile'
+      - 'docker/*.dockerfile'
 
 jobs:
   publish_images:
@@ -15,10 +14,10 @@ jobs:
         uses: actions/checkout@v4
       - name: build image
         run: |
-          docker build -t abhinandanjain/decoraAI:client_latest ./client/
-          docker build -t abhinandanjain/decoraAI:server_latest ./server/
+          docker build -t ${{ secrets.DOCKER_HUB_USER }}/decoraAI:client_latest ./client/
+          docker build -t ${{ secrets.DOCKER_HUB_USER }}/decoraAI:server_latest ./server/
       - name: push image
         run: |
-          docker login -u abhinandanjain -p ${{ secrets.DOCKER_HUB_LOGIN }}
-          docker push abhinandanjain/decoraAI:client_latest
-          docker push abhinandanjain/decoraAI:server_latest
+          docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_LOGIN }}
+          docker push ${{ secrets.DOCKER_HUB_USER }}/decoraAI:client_latest
+          docker push ${{ secrets.DOCKER_HUB_USER }}/decoraAI:server_latest
