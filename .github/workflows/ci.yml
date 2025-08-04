@@ -1,0 +1,53 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - feat-*
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  server:
+    name: Server Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11.0'
+
+      - name: Install dependencies
+        working-directory: server
+        run: pip install -r requirements.txt
+
+  client:
+    name: Client Build & Test
+    runs-on: ubuntu-latest
+    needs: server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install client dependencies
+        working-directory: client/
+        run: npm install
+
+      - name: Run client linter
+        working-directory: client
+        run: npm run lint
+
+      - name: Build client
+        working-directory: client
+        run: npm run build
