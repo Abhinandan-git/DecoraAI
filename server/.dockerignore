@@ -1,0 +1,43 @@
+# General ignores
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/env/
+**/venv/
+**/.venv/
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+**/.DS_Store
+**/coverage/
+**/.pytest_cache/
+**/logs/
+**/*.log
+**/.idea/
+**/.vscode/
+**/.git/
+**/.github/
+**/.env
+**/.env.*
+**/tmp/
+
+# Ignore Docker build leftovers
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Ignore client-side dev stuff
+client/.eslintcache
+client/.turbo/
+client/.vercel/
+
+# Ignore server-side dev stuff
+server/.mypy_cache/
+server/.ruff_cache/
+server/.pytest_cache/
+server/.coverage
+
+# Ignore macOS file system junk
+**/.DS_Store
