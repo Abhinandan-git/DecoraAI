@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+import json
+
+import utils.database
 
 app = FastAPI()
 
@@ -11,6 +14,8 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
+utils.database.ping_database()
+
 @app.get("/")
-async def read_root():
+def read_root():
 	return {"message": "Hello, World!"}
