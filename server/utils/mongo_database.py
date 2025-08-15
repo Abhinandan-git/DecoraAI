@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-from pymongo.server_api import ServerApi
 
 # Import environment variables
 from dotenv import load_dotenv
@@ -13,7 +12,7 @@ uri = os.getenv("MONGO_URI", "")
 client = MongoClient(uri)
 
 # Send a ping to confirm a successful connection
-def ping_database():
+def ping_mongo_database():
 	try:
 		client.admin.command("ping")
 		print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -21,5 +20,5 @@ def ping_database():
 		print(e)
 
 # Return the collection instance to the caller
-def get_collection():
+def get_mongo_collection():
 	return client.DecoraAI.canvas
