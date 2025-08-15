@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from server.utils.mongo_database import ping_mongo_database
 from server.utils.postgres_database import get_postgres_database
-
 app = FastAPI()
 
 app.add_middleware(
