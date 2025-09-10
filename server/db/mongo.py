@@ -10,6 +10,6 @@ MONGO_URI = os.getenv("MONGO_URI", "")
 
 # Send a ping to confirm a successful connection
 async def get_db():
-	client = AsyncIOMotorClient("mongodb://localhost:27017")
-	db = client["mydatabase"]
+	client = AsyncIOMotorClient(MONGO_URI)
+	db = client["DecoraAI"]
 	return db

@@ -8,11 +8,10 @@ load_dotenv()
 
 NEON_URI = os.getenv("NEON_URI", "")
 
-engine = create_async_engine(NEON_URI, echo=True)
-
-SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
-Base = declarative_base()
-
 async def get_db():
+	engine = create_async_engine(NEON_URI, echo=True)
+	SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+	Base = declarative_base()
+
 	async with SessionLocal() as session:
 		yield session
