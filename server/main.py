@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from utils.mongo_database import ping_mongo_database
-from utils.postgres_database import get_postgres_database
+from server.db.mongo import get_db as get_mongo_db
+from server.db.postgres import get_db as get_postgres_db
+
 app = FastAPI()
 
 app.add_middleware(
@@ -13,9 +14,6 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
-ping_mongo_database()
-get_postgres_database()
-
 @app.get("/")
-def read_root():
+async def read_root():
 	return {"message": "Hello, World!"}
