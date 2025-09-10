@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 
 # Import environment variables
 from dotenv import load_dotenv
@@ -6,19 +6,10 @@ import os
 
 load_dotenv()
 
-uri = os.getenv("MONGO_URI", "")
-
-# Create a new client and connect to the server
-client = MongoClient(uri)
+MONGO_URI = os.getenv("MONGO_URI", "")
 
 # Send a ping to confirm a successful connection
-def ping_mongo_database():
-	try:
-		client.admin.command("ping")
-		print("Pinged your deployment. You successfully connected to MongoDB!")
-	except Exception as e:
-		print(e)
-
-# Return the collection instance to the caller
-def get_mongo_collection():
-	return client.DecoraAI.canvas
+async def get_db():
+	client = AsyncIOMotorClient("mongodb://localhost:27017")
+	db = client["mydatabase"]
+	return db
