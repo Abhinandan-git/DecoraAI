@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from server.db.mongo import get_db as get_mongo_db
-from server.db.postgres import get_db as get_postgres_db
-
 app = FastAPI()
 
 app.add_middleware(
