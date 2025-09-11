@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from server.db.postgres import get_db
 
 from server.models.postgres import RegisterUserModel, LoginUserModel
+from server.models.user import User
 
 router = APIRouter(prefix="/api/v1")
 
@@ -21,6 +22,8 @@ async def register_user(user: RegisterUserModel, database: Session = Depends(get
 @router.post("/login")
 async def login_user(user: LoginUserModel, database: Session = Depends(get_db)):
 	# Get the user from database
+	db_user = database.query(User).filter(User.email == user.email).first()
+	return db_user
 
 	# Check if user does not exists, return fail
 
