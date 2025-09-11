@@ -10,8 +10,8 @@ class RegisterUserModel(BaseModel):
     password: str
     priviledge_level: int = 100
     created_at: datetime = datetime.now()
-    last_login: datetime
-    profile_picture_url: str = ""
+    last_login: datetime = datetime.now()
+    profile_picture_url: str = "" # Default URL will be different
     canvases: List[UUID] = []
 
 class LoginUserModel(BaseModel):

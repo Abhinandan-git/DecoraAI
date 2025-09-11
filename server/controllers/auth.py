@@ -1,9 +1,5 @@
 from fastapi import APIRouter, Depends
-from typing import Annotated
-from uuid import UUID
-
-# Remove this import
-from uuid import uuid4
+from sqlalchemy.orm import Session
 
 from server.db.postgres import get_db
 
@@ -12,7 +8,7 @@ from server.models.postgres import RegisterUserModel, LoginUserModel
 router = APIRouter(prefix="/api/v1")
 
 @router.post("/register")
-def register_user(user: Annotated[RegisterUserModel, Depends(get_db)]):
+async def register_user(user: RegisterUserModel, database: Session = Depends(get_db)):
 	# Get the user from database
 
 	# Check if user exists, return fail
@@ -23,7 +19,7 @@ def register_user(user: Annotated[RegisterUserModel, Depends(get_db)]):
 	pass
 
 @router.post("/login")
-def login_user(user: Annotated[LoginUserModel, Depends(get_db)]):
+async def login_user(user: LoginUserModel, database: Session = Depends(get_db)):
 	# Get the user from database
 
 	# Check if user does not exists, return fail
