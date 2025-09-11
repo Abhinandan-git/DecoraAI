@@ -22,7 +22,7 @@ async def register_user(user: RegisterUserModel, database: Session = Depends(get
 @router.post("/login")
 async def login_user(user: LoginUserModel, database: Session = Depends(get_db)):
 	# Get the user from database
-	db_user = database.query(User).filter(User.email == user.email).first()
+	db_user = database.query(User).filter(User.username == user.username).first()
 	return db_user
 
 	# Check if user does not exists, return fail
