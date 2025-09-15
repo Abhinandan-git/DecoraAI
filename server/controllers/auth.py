@@ -1,33 +1,40 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from passlib.context import CryptContext
 
-from server.db.postgres import get_db
-
-from server.models.postgres import RegisterUserModel, LoginUserModel
-from server.models.user import User
+from db.postgres import database
+from models.user import User
+from models.schemas import RegisterUserSchema, LoginUserSchema
+from utils.generateToken import create_access_token, verify_access_token
 
 router = APIRouter(prefix="/api/v1")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 @router.post("/register")
-async def register_user(user: RegisterUserModel, database: Session = Depends(get_db)):
-	# Get the user from database
+def register_user(user: RegisterUserSchema, db: Session = Depends(database)):
+    
+    existing_user = db.query(User).filter(
+        (User.email == user.email) | (User.username == user.username)
+    ).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User already exists")
 
-	# Check if user exists, return fail
+    hashed_password = pwd_context.hash(user.password)
 
-	# Else, create the user using UserModel
+ 
+    db_user = User(username=user.username, email=user.email, password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
 
-	# Remove this and return user_id created
-	pass
+
+    access_token = create_access_token(data={"sub": str(db_user.id)})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
 
 @router.post("/login")
-async def login_user(user: LoginUserModel, database: Session = Depends(get_db)):
-	# Get the user from database
-	db_user = database.query(User).filter(User.username == user.username).first()
-	return db_user
+def login_user(user: LoginUserSchema, db: Session = Depends(database)):
 
-	# Check if user does not exists, return fail
-
-	# Else, retrieve and return token
-
-	# Remove this and return user_id/token created
-	pass
+    return {"access_token": "", "token_type": "bearer"}
