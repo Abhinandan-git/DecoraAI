@@ -18,3 +18,7 @@ app.include_router(auth_router)
 @app.get("/")
 async def read_root():
 	return {"message": "Hello, World!"}
+
+# @app.get("/profile")
+# async def profile(user_id: str = Depends(get_current_user)):
+#     return {"user_id": user_id}

@@ -1,22 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-
-from db.postgres import database
+from db.postgres import get_db as database
 from models.user import User
 from models.schemas import RegisterUserSchema, LoginUserSchema
 from utils.generateToken import create_access_token, verify_access_token
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 router = APIRouter(prefix="/api/v1")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @router.post("/register")
-def register_user(user: RegisterUserSchema, db: Session = Depends(database)):
+async def register_user(user: RegisterUserSchema, db: AsyncSession = Depends(database)):
     
-    existing_user = db.query(User).filter(
+    result = await db.execute(select(User).where(
         (User.email == user.email) | (User.username == user.username)
-    ).first()
+    ))
+    existing_user = result.scalars().first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
 
@@ -25,8 +27,8 @@ def register_user(user: RegisterUserSchema, db: Session = Depends(database)):
  
     db_user = User(username=user.username, email=user.email, password=hashed_password)
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
 
 
     access_token = create_access_token(data={"sub": str(db_user.id)})
@@ -34,7 +36,17 @@ def register_user(user: RegisterUserSchema, db: Session = Depends(database)):
 
 
 
-@router.post("/login")
-def login_user(user: LoginUserSchema, db: Session = Depends(database)):
 
-    return {"access_token": "", "token_type": "bearer"}
+@router.post("/login")
+async def login_user(user: LoginUserSchema, db: AsyncSession = Depends(database)):
+    result = await db.execute(select(User).where(User.email == user.email))
+    db_user = result.scalars().first()
+    
+    if not db_user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    
+    if not pwd_context.verify(user.password, db_user.password):
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    
+    access_token = create_access_token(data={"sub": str(db_user.id)})
+    return {"access_token": access_token, "token_type": "bearer"}
