@@ -15,7 +15,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register")
 async def register_user(user: RegisterUserSchema, db: AsyncSession = Depends(database)):
-    
     result = await db.execute(select(User).where(
         (User.email == user.email) | (User.username == user.username)
     ))
@@ -30,8 +29,7 @@ async def register_user(user: RegisterUserSchema, db: AsyncSession = Depends(dat
     await db.commit()
     await db.refresh(db_user)
 
-
-    access_token = create_access_token(data={"sub": str(db_user.id)})
+    access_token = create_access_token(data={"sub": str(db_user.user_id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login")
@@ -45,5 +43,5 @@ async def login_user(user: LoginUserSchema, db: AsyncSession = Depends(database)
     if not pwd_context.verify(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     
-    access_token = create_access_token(data={"sub": str(db_user.id)})
+    access_token = create_access_token(data={"sub": str(db_user.user_id)})
     return {"access_token": access_token, "token_type": "bearer"}

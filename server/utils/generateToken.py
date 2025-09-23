@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime, timedelta
-from jwt import jwt
+import jwt
 from fastapi.security import OAuth2PasswordBearer
 
 import os
@@ -25,14 +25,14 @@ def verify_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub", "")
         
         if user_id is None:
             return None
         return user_id
     
-    except JWTError:
+    except Exception:
         return None
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
