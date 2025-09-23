@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from server.db.mongo import get_db as get_mongo_db
-from server.db.postgres import get_db as get_postgres_db
+from controllers.auth import router as auth_router
 
 app = FastAPI()
 
@@ -14,6 +13,12 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
+app.include_router(auth_router)
+
 @app.get("/")
 async def read_root():
 	return {"message": "Hello, World!"}
+
+# @app.get("/profile")
+# async def profile(user_id: str = Depends(get_current_user)):
+#     return {"user_id": user_id}
