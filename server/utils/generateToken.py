@@ -7,7 +7,7 @@ from config.env import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
-def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES):
+def create_access_token(data: dict, expires_minutes: int = int(ACCESS_TOKEN_EXPIRE_MINUTES)):
     to_encode = data.copy()
     expire = datetime.now() + timedelta(minutes=expires_minutes)
     to_encode.update({"exp": expire})
