@@ -16,4 +16,3 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=func.now())
     last_login_at = Column(DateTime(timezone=True), default=func.now())
     profile_picture_url = Column(String, default="")
-    # canvas = Column(ARRAY(UUID), default=[])

@@ -3,10 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from db.postgres import get_db as database
 from models.user import User
 from models.schemas import RegisterUserSchema, LoginUserSchema
-from utils.generateToken import create_access_token, verify_access_token
+from utils.generateToken import create_access_token
 
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -40,7 +39,7 @@ async def login_user(user: LoginUserSchema, db: AsyncSession = Depends(database)
     if not db_user:
         raise HTTPException(status_code=400, detail="Invalid credentials")
     
-    if not pwd_context.verify(user.password, db_user.password):
+    if not pwd_context.verify(user.password, str(db_user.password)):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     
     access_token = create_access_token(data={"sub": str(db_user.user_id)})

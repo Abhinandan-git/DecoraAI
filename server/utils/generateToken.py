@@ -3,14 +3,7 @@ from datetime import datetime, timedelta
 import jwt
 from fastapi.security import OAuth2PasswordBearer
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-SECRET = os.getenv("SECRET", "")
-ALGORITHM = os.getenv("ALGO", "")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+from config.env import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
