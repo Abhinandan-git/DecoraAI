@@ -4,7 +4,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from config.env import MONGO_URI
 
 # Send a ping to confirm a successful connection
-async def get_db():
-	client = AsyncIOMotorClient(MONGO_URI)
-	db = client["DecoraAI"]
-	return db
+class MongoDB:
+	uri: str = MONGO_URI
+
+	async def get_db(self):
+		client = AsyncIOMotorClient(self.uri)
+		db = client["DecoraAI"]
+		return db

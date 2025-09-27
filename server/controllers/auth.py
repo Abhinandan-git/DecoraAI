@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from db.postgres import get_db as database
+from db.postgres import PostgreSQL
 from models.user import User
 from models.schemas import RegisterUserSchema, LoginUserSchema
 from utils.generateToken import create_access_token
@@ -9,11 +9,11 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/auth")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register")
-async def register_user(user: RegisterUserSchema, db: AsyncSession = Depends(database)):
+async def register_user(user: RegisterUserSchema, db: AsyncSession = Depends(PostgreSQL.get_db)):
     result = await db.execute(select(User).where(
         (User.email == user.email) | (User.username == user.username)
     ))
@@ -32,7 +32,7 @@ async def register_user(user: RegisterUserSchema, db: AsyncSession = Depends(dat
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login")
-async def login_user(user: LoginUserSchema, db: AsyncSession = Depends(database)):
+async def login_user(user: LoginUserSchema, db: AsyncSession = Depends(PostgreSQL.get_db)):
     result = await db.execute(select(User).where(User.email == user.email))
     db_user = result.scalars().first()
     
