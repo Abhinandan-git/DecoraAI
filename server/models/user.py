@@ -3,9 +3,9 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.sql import func
 import uuid
 
-from db.postgres import PostgreSQL
+from db.postgres import Base
 
-class User(PostgreSQL.Base):
+class User(Base):
     __tablename__ = "users"
 
     user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, index=True)
