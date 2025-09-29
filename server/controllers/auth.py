@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from db.postgres import get_db
 from models.user import User
 from models.schemas import RegisterUserSchema, LoginUserSchema
-from utils.generateToken import create_access_token
+from utils.token import create_access_token
 
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
