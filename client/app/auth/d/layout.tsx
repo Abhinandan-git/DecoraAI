@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "DecoraAI | Login",
+	title: "DecoraAI | Designer Login",
 	description: "",
 };
 

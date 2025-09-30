@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FaRegEnvelope } from "react-icons/fa";
 import { MdLockOutline } from "react-icons/md";
 
-const AuthPage = () => {
+const DesignerLogin = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	
@@ -15,13 +15,27 @@ const AuthPage = () => {
 	const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setPassword(event.target.value);
 	};
-
+	
 	return (
 		<main className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-100">
 			<div className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
 				<div className="bg-white rounded-2xl shadow-2xl flex w-2/3 max-w-4xl">
+					<div className="w-2/5 bg-green-500 text-white rounded-tl-2xl rounded-bl-2xl py-36 px-12">
+						<h2 className="text-3xl font-bold mb-2">Hello, Friend!</h2>
+						<div className="border-2 w-10 border-white inline-block mb-2"></div>
+						<p className="mb-10">
+							Fill up personal information and start your journey with us.
+						</p>
+						<a
+							href="#"
+							className="border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-green-500"
+						>
+							Sign Up
+						</a>
+					</div>
+					{/* Sign in section */}
 					<div className="w-3/5 p-5">
-						<div className="text-left font-bold">
+						<div className="text-right font-bold">
 							<span className="text-green-500">Decora</span>AI
 						</div>
 						<div className="py-10">
@@ -33,24 +47,24 @@ const AuthPage = () => {
 							<div className="flex flex-col items-center gap-2">
 								<div className="bg-gray-100 w-64 p-2 flex items-center">
 									<FaRegEnvelope className="text-gray-400 m-2" />
-									<input 
-										onChange={(event: React.ChangeEvent<HTMLInputElement>) => handleEmailChange(event)} 
-										value={email} 
-										type="email" 
-										name="email" 
-										placeholder="Email" 
-										className="bg-gray-100 outline-none text-sm flex-1" 
+									<input
+										onChange={(event: React.ChangeEvent<HTMLInputElement>) => handleEmailChange(event)}
+										value={email}
+										type="email"
+										name="email"
+										placeholder="Designer Email"
+										className="bg-gray-100 outline-none text-sm flex-1"
 									/>
 								</div>
 								<div className="bg-gray-100 w-64 p-2 flex items-center">
 									<MdLockOutline className="text-gray-400 m-2" />
-									<input 
-										onChange={(event: React.ChangeEvent<HTMLInputElement>) => handlePasswordChange(event)} 
-										value={password} 
-										type="password" 
-										name="password" 
-										placeholder="Password" 
-										className="bg-gray-100 outline-none text-sm flex-1" 
+									<input
+										onChange={(event: React.ChangeEvent<HTMLInputElement>) => handlePasswordChange(event)}
+										value={password}
+										type="password"
+										name="password"
+										placeholder="Password"
+										className="bg-gray-100 outline-none text-sm flex-1"
 									/>
 								</div>
 								<div className="flex justify-between w-64 mb-5">
@@ -66,24 +80,10 @@ const AuthPage = () => {
 							</div>
 						</div>
 					</div>
-					{/* Sign in section */}
-					<div className="w-2/5 bg-green-500 text-white rounded-tr-2xl rounded-br-2xl py-36 px-12">
-						<h2 className="text-3xl font-bold mb-2">Hello, Friend!</h2>
-						<div className="border-2 w-10 border-white inline-block mb-2"></div>
-						<p className="mb-10">
-							Fill up personal information and start your journey with us.
-						</p>
-						<a
-							href="#"
-							className="border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-green-500"
-						>
-							Sign Up
-						</a>
-					</div>
 				</div>
 			</div >
 		</main >
 	)
 }
 
-export default AuthPage
+export default DesignerLogin
