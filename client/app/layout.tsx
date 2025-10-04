@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        data-new-gr-c-s-check-loaded="14.1255.0"
+        data-new-gr-c-s-check-loaded="14.1256.0"
         data-gr-ext-installed=""
       >
         {children}
