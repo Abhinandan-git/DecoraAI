@@ -16,17 +16,17 @@ export default function AuthPage() {
             <input
               type="text"
               placeholder="Name"
-              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none"
+              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none rounded-[4px]"
             />
             <input
               type="email"
               placeholder="Email"
-              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none"
+              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none rounded-[4px]"
             />
             <input
               type="password"
               placeholder="Password"
-              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none"
+              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none rounded-[4px]"
             />
             <button
               type="button"
@@ -45,22 +45,16 @@ export default function AuthPage() {
             <input
               type="email"
               placeholder="Email"
-              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none"
+              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none rounded-[4px]"
             />
             <input
               type="password"
               placeholder="Password"
-              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none"
+              className="bg-gray-200 border-none py-3 px-4 my-2 w-full focus:outline-none rounded-[4px]"
             />
-            <a
-              href="#"
-              className="text-gray-600 text-sm no-underline my-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
             <button
               type="button"
-              className="rounded-full border border-[#ff4b2b] bg-[#ff4b2b] text-white text-xs font-bold py-3 px-11 tracking-wider uppercase active:scale-95 transition-transform duration-100"
+              className="rounded-full border border-[#ff4b2b] bg-[#ff4b2b] text-white text-xs font-bold py-3 px-11 tracking-wider uppercase active:scale-95 transition-transform duration-100 my-2"
             >
               Sign In
             </button>
@@ -77,7 +71,7 @@ export default function AuthPage() {
               className={"absolute top-0 left-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 transition-transform duration-700 ease-in-out " + (signingIn ? "-translate-x-1/5" : "translate-x-0")}>
               <h1 className="font-bold text-2xl">Welcome Back!</h1>
               <p className="text-sm font-light leading-5 tracking-wide my-5">
-                To keep connected with us please login with your personal info
+                To keep connected with us please login with your details
               </p>
               <button
                 onClick={() => setSigningIn(true)}
@@ -92,7 +86,7 @@ export default function AuthPage() {
               className={"absolute top-0 right-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 transition-transform duration-700 ease-in-out " + (!signingIn ? "translate-x-[20%]" : "translate-x-0")}>
               <h1 className="font-bold text-2xl">Hello, Friend!</h1>
               <p className="text-sm font-light leading-5 tracking-wide my-5">
-                Enter your personal details and start your journey with us
+                Enter your details and start your journey with us
               </p>
               <button
                 onClick={() => setSigningIn(false)}
