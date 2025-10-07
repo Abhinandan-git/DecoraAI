@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 import jwt
-from fastapi.security import OAuth2PasswordBearer
 
 from config.env import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET, ALGORITHM
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 def create_access_token(data: dict, expires_minutes: int = int(ACCESS_TOKEN_EXPIRE_MINUTES)):
     to_encode = data.copy()
@@ -16,8 +16,6 @@ def create_access_token(data: dict, expires_minutes: int = int(ACCESS_TOKEN_EXPI
 
 def verify_access_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
         payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub", "")
         
