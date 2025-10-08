@@ -1,40 +1,50 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getCookie, setCookie } from 'cookies-next/client';
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
+  const { push } = useRouter();
+
   const [signingIn, setSigningIn] = useState(true);
 
+  const [accessToken, setAccessToken] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [status, setStatus] = useState(200);
   const [errorMessage, setErrorMessage] = useState("");
   const [border, setBorder] = useState(" border-gray-200");
 
-  const sendRequest = async (endpoint: string, body: object) => {
-		await fetch(endpoint, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify(body)
-    }).then((responseJson) => {
-      setStatus(responseJson.status);
-
-      if (status === 400) {
-        setBorder(" border-red-500");
-        setErrorMessage("User already exists");
-      } else if (status !== 200) {
-        setBorder(" border-red-500");
-        setErrorMessage("Invalid details");
-      } else {
-        // do redirect stuff
+  useEffect(() => {
+    setTimeout(() => {
+      const access_token = getCookie("access_token");
+      if (access_token) {
+        push("/dashboard");
       }
-    }).catch((error) => {
-      console.log(error);
+    }, 2);
+  }, [accessToken]);
+
+  const sendRequest = async (endpoint: string, body: object) => {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
     });
+
+    if (!response.ok) {
+      setErrorMessage("Invalid Credentials");
+      setBorder(" border-red-500");
+    }
+
+    const responseBody = await response.json();
+
+    setCookie("access_token", responseBody.access_token, { maxAge: 60 * 24, domain: process.env.NEXT_PUBLIC_SITE_URL });
+    setCookie("token_type", responseBody.token_type, { maxAge: 60 * 24, domain: process.env.NEXT_PUBLIC_SITE_URL });
+    setAccessToken(true);
   };
 
   const signupHandler = async () => {
