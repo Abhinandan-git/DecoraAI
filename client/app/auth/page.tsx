@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 
+import { AiOutlineLoading } from "react-icons/ai";
+
 export default function AuthPage() {
   const [signingIn, setSigningIn] = useState(true);
 
@@ -12,6 +14,7 @@ export default function AuthPage() {
   const [status, setStatus] = useState(200);
   const [errorMessage, setErrorMessage] = useState("");
   const [border, setBorder] = useState(" border-gray-200");
+  const [loader, setLoader] = useState(false);
 
   const sendRequest = async (endpoint: string, body: object) => {
 		await fetch(endpoint, {
@@ -49,6 +52,8 @@ export default function AuthPage() {
   };
 
   const signinHandler = async () => {
+    setLoader(true);
+    
     const endpoint = process.env.NEXT_PUBLIC_SERVER_URL + "/auth/login";
     const body = {
       email: email,
@@ -56,6 +61,8 @@ export default function AuthPage() {
     }
 
     await sendRequest(endpoint, body);
+
+    setLoader(false);
   };
 
   return (
@@ -93,7 +100,7 @@ export default function AuthPage() {
               className="rounded-full border border-[#ff4b2b] bg-[#ff4b2b] text-white text-xs font-bold py-3 px-11 tracking-wider uppercase active:scale-95 transition-transform duration-100"
               onClick={async () => signupHandler()}
             >
-              Sign Up
+              {!loader ? "Sign Up" : <AiOutlineLoading className="animate-spin" />}
             </button>
           </div>
         </div>
@@ -102,7 +109,7 @@ export default function AuthPage() {
         <div
           className={"absolute top-0 left-0 w-1/2 h-full transition-all duration-700 ease-in-out z-[2] " + (!signingIn && "translate-x-full")}>
           <div className="bg-white flex flex-col items-center justify-center px-[50px] h-full text-center">
-            <h1 className="font-bold m-0 text-2xl">Sign in</h1>
+            <h1 className="font-bold m-0 text-2xl">Sign In</h1>
             <p className="text-red-500 text-xs mt-1">{errorMessage}</p>
             <input
               type="email"
@@ -123,7 +130,7 @@ export default function AuthPage() {
               className="rounded-full border border-[#ff4b2b] bg-[#ff4b2b] text-white text-xs font-bold py-3 px-11 tracking-wider uppercase active:scale-95 transition-transform duration-100 my-2"
               onClick={async () => signinHandler()}
             >
-              Sign In
+              {!loader ? "Sign In" : <AiOutlineLoading className="animate-spin" />}
             </button>
           </div>
         </div>
