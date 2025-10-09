@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { AiOutlineLoading } from "react-icons/ai";
 
+import { AiOutlineLoading } from "react-icons/ai";
+
 export default function AuthPage() {
   const { push } = useRouter();
 
