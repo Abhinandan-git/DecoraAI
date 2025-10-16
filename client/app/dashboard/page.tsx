@@ -1,15 +1,46 @@
 "use client";
 
 import { HouseHeart, Plus } from "lucide-react";
+import { getCookie } from "cookies-next/client";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { AiOutlineLoading } from "react-icons/ai";
 
 const Dashboard = () => {
-	const createNewCanvas = async () => {		
-		const response = await fetch(process.env.NEXT_PUBLIC_SERVER_URL + "/canvas/create", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
+	const [loader, setLoader] = useState(false);
+
+	useEffect(() => {
+		setTimeout(() => {
+			const access_token = getCookie("access_token");
+			if (!access_token) {
+				push("/auth");
 			}
-		});
+		}, 2);
+	});
+
+	const { push } = useRouter();
+
+	const createNewCanvas = async () => {
+		setLoader(true);
+
+		const access_token = getCookie("access_token");
+		try {
+			const response = await fetch(process.env.NEXT_PUBLIC_SERVER_URL + "/canvas/create", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": "Bearer " + access_token
+				}
+			});
+			const responseJson = await response.json();
+
+			push("/editor/" + responseJson?.canvas_id);
+		} catch (err) {
+      console.log(err);
+			throw Error();
+		} finally {
+			setLoader(false);
+		}
 	};
 
 	return (
@@ -36,7 +67,7 @@ const Dashboard = () => {
 						<div className="aspect-[1/1] p-6 flex flex-col">
 							<div className="relative flex-1 flex items-center justify-center">
 								<div className="absolute flex-1 flex items-center justify-center rounded-lg w-[100%] h-[100%] transition-all duration-300 bg-gradient-to-br from-[#ff4b2b] to-[#ff416c] opacity-0 group-hover:opacity-100 group-hover:scale-105"></div>
-								<Plus className="w-10 h-10 z-0 text-[#1a1a1a] transition-all group-hover:text-white"></Plus>
+								{!loader ? <Plus className="w-10 h-10 z-0 text-[#1a1a1a] transition-all group-hover:text-white" /> : <AiOutlineLoading className="animate-spin text-[#1a1a1a] group-hover:text-white" />}
 							</div>
 						</div>
 						<div className="pb-4 space-y-1 transition-all group-hover:scale-105">

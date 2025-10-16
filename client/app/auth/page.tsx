@@ -30,24 +30,26 @@ export default function AuthPage() {
   }, [accessToken]);
 
   const sendRequest = async (endpoint: string, body: object) => {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!response.ok) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+      
+      const responseBody = await response.json();
+  
+      setCookie("access_token", responseBody.access_token, { maxAge: 60 * 24, domain: process.env.NEXT_PUBLIC_SITE_URL });
+      setCookie("token_type", responseBody.token_type, { maxAge: 60 * 24, domain: process.env.NEXT_PUBLIC_SITE_URL });
+      setAccessToken(true);
+    } catch(err) {
+      console.log(err);
       setErrorMessage("Invalid Credentials");
       setBorder(" border-red-500");
+      setLoader(false);
     }
-
-    const responseBody = await response.json();
-
-    setCookie("access_token", responseBody.access_token, { maxAge: 60 * 24, domain: process.env.NEXT_PUBLIC_SITE_URL });
-    setCookie("token_type", responseBody.token_type, { maxAge: 60 * 24, domain: process.env.NEXT_PUBLIC_SITE_URL });
-    setAccessToken(true);
   };
 
   const signupHandler = async () => {
