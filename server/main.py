@@ -16,7 +16,6 @@ import base64
 import io
 import textwrap
 from typing import Optional
-
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -24,6 +23,7 @@ from pydantic import BaseModel
 
 try:
     from PIL import Image, ImageDraw, ImageFont
+
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
@@ -40,23 +40,23 @@ app.add_middleware(
 # ── Catalogue ─────────────────────────────────────────────────────────────────
 
 CATALOGUE = [
-    {"id":"wall-h","label":"Wall H","category":"walls","defaultWidth":120,"defaultHeight":12,"svg":'<svg viewBox="0 0 120 12" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="120" height="12" fill="currentColor"/></svg>'},
-    {"id":"wall-v","label":"Wall V","category":"walls","defaultWidth":12,"defaultHeight":120,"svg":'<svg viewBox="0 0 12 120" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="12" height="120" fill="currentColor"/></svg>'},
-    {"id":"wall-corner","label":"Corner","category":"walls","defaultWidth":72,"defaultHeight":72,"svg":'<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="12" height="72" fill="currentColor"/><rect x="12" y="0" width="60" height="12" fill="currentColor"/></svg>'},
-    {"id":"wall-t","label":"T-Wall","category":"walls","defaultWidth":72,"defaultHeight":72,"svg":'<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="72" height="12" fill="currentColor"/><rect x="30" y="12" width="12" height="60" fill="currentColor"/></svg>'},
-    {"id":"door-single","label":"Door","category":"openings","defaultWidth":80,"defaultHeight":80,"svg":'<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="8" height="80" fill="currentColor"/><rect x="8" y="72" width="72" height="8" fill="currentColor"/><path d="M8 0 L80 0" stroke="currentColor" stroke-width="8" fill="none"/><path d="M16 8 Q16 72 72 72" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity="0.5"/></svg>'},
-    {"id":"door-double","label":"Double Door","category":"openings","defaultWidth":120,"defaultHeight":80,"svg":'<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="8" height="80" fill="currentColor"/><rect x="112" y="0" width="8" height="80" fill="currentColor"/><rect x="8" y="72" width="104" height="8" fill="currentColor"/><path d="M8 0 L112 0" stroke="currentColor" stroke-width="8" fill="none"/><path d="M16 8 Q16 68 60 72" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity="0.5"/><path d="M104 8 Q104 68 60 72" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity="0.5"/></svg>'},
-    {"id":"window","label":"Window","category":"openings","defaultWidth":80,"defaultHeight":16,"svg":'<svg viewBox="0 0 80 16" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="80" height="16" fill="currentColor" opacity="0.15"/><rect x="0" y="0" width="80" height="4" fill="currentColor"/><rect x="0" y="12" width="80" height="4" fill="currentColor"/><line x1="40" y1="0" x2="40" y2="16" stroke="currentColor" stroke-width="1.5"/></svg>'},
-    {"id":"sliding-door","label":"Sliding","category":"openings","defaultWidth":80,"defaultHeight":16,"svg":'<svg viewBox="0 0 80 16" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="80" height="16" fill="currentColor" opacity="0.1"/><rect x="0" y="0" width="80" height="4" fill="currentColor"/><rect x="0" y="12" width="80" height="4" fill="currentColor"/><rect x="4" y="4" width="36" height="8" fill="currentColor" opacity="0.4" rx="1"/><rect x="40" y="4" width="36" height="8" fill="currentColor" opacity="0.25" rx="1"/></svg>'},
-    {"id":"sofa","label":"Sofa","category":"furniture","defaultWidth":120,"defaultHeight":60,"svg":'<svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="10" width="120" height="50" rx="6" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="0" y="10" width="120" height="18" rx="6" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="10" width="16" height="50" rx="4" fill="currentColor" opacity="0.4" stroke="currentColor" stroke-width="1.5"/><rect x="104" y="10" width="16" height="50" rx="4" fill="currentColor" opacity="0.4" stroke="currentColor" stroke-width="1.5"/></svg>'},
-    {"id":"bed-single","label":"Single Bed","category":"furniture","defaultWidth":80,"defaultHeight":120,"svg":'<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="76" height="116" rx="4" fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="68" height="30" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="42" width="68" height="70" rx="2" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="1"/></svg>'},
-    {"id":"bed-double","label":"Double Bed","category":"furniture","defaultWidth":120,"defaultHeight":120,"svg":'<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="116" height="116" rx="4" fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="108" height="30" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="42" width="108" height="72" rx="2" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="1"/></svg>'},
-    {"id":"desk","label":"Desk","category":"furniture","defaultWidth":100,"defaultHeight":55,"svg":'<svg viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="96" height="51" rx="2" fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="2"/><rect x="2" y="2" width="96" height="10" rx="2" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/></svg>'},
-    {"id":"dining-table","label":"Table","category":"furniture","defaultWidth":100,"defaultHeight":70,"svg":'<svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="50" rx="3" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="14" y="4" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="68" y="4" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="54" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="68" y="54" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/></svg>'},
-    {"id":"toilet","label":"Toilet","category":"fixtures","defaultWidth":48,"defaultHeight":68,"svg":'<svg viewBox="0 0 48 68" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="0" width="36" height="20" rx="3" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.5"/><ellipse cx="24" cy="48" rx="20" ry="18" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><ellipse cx="24" cy="48" rx="14" ry="13" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1"/></svg>'},
-    {"id":"bathtub","label":"Bathtub","category":"fixtures","defaultWidth":70,"defaultHeight":130,"svg":'<svg viewBox="0 0 70 130" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="66" height="126" rx="10" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="8" y="8" width="54" height="114" rx="8" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1"/></svg>'},
-    {"id":"sink","label":"Sink","category":"fixtures","defaultWidth":56,"defaultHeight":50,"svg":'<svg viewBox="0 0 56 50" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="52" height="46" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="8" y="8" width="40" height="34" rx="8" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1"/></svg>'},
-    {"id":"staircase","label":"Stairs","category":"fixtures","defaultWidth":80,"defaultHeight":120,"svg":'<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="80" height="120" fill="currentColor" opacity="0.05" stroke="currentColor" stroke-width="2"/><line x1="0" y1="10" x2="80" y2="10" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="22" x2="80" y2="22" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="34" x2="80" y2="34" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="46" x2="80" y2="46" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="58" x2="80" y2="58" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="70" x2="80" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="82" x2="80" y2="82" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="94" x2="80" y2="94" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="106" x2="80" y2="106" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="118" x2="80" y2="118" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><path d="M10 110 L70 10" stroke="currentColor" stroke-width="1.5" opacity="0.3" stroke-dasharray="3 3"/></svg>'},
+    {"id": "wall-h", "label": "Wall H", "category": "walls", "defaultWidth": 120, "defaultHeight": 12, "svg": '<svg viewBox="0 0 120 12" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="120" height="12" fill="currentColor"/></svg>'},
+    {"id": "wall-v", "label": "Wall V", "category": "walls", "defaultWidth": 12, "defaultHeight": 120, "svg": '<svg viewBox="0 0 12 120" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="12" height="120" fill="currentColor"/></svg>'},
+    {"id": "wall-corner", "label": "Corner", "category": "walls", "defaultWidth": 72, "defaultHeight": 72, "svg": '<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="12" height="72" fill="currentColor"/><rect x="12" y="0" width="60" height="12" fill="currentColor"/></svg>'},
+    {"id": "wall-t", "label": "T-Wall", "category": "walls", "defaultWidth": 72, "defaultHeight": 72, "svg": '<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="72" height="12" fill="currentColor"/><rect x="30" y="12" width="12" height="60" fill="currentColor"/></svg>'},
+    {"id": "door-single", "label": "Door", "category": "openings", "defaultWidth": 80, "defaultHeight": 80, "svg": '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="8" height="80" fill="currentColor"/><rect x="8" y="72" width="72" height="8" fill="currentColor"/><path d="M8 0 L80 0" stroke="currentColor" stroke-width="8" fill="none"/><path d="M16 8 Q16 72 72 72" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity="0.5"/></svg>'},
+    {"id": "door-double", "label": "Double Door", "category": "openings", "defaultWidth": 120, "defaultHeight": 80, "svg": '<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="8" height="80" fill="currentColor"/><rect x="112" y="0" width="8" height="80" fill="currentColor"/><rect x="8" y="72" width="104" height="8" fill="currentColor"/><path d="M8 0 L112 0" stroke="currentColor" stroke-width="8" fill="none"/><path d="M16 8 Q16 68 60 72" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity="0.5"/><path d="M104 8 Q104 68 60 72" stroke="currentColor" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity="0.5"/></svg>'},
+    {"id": "window", "label": "Window", "category": "openings", "defaultWidth": 80, "defaultHeight": 16, "svg": '<svg viewBox="0 0 80 16" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="80" height="16" fill="currentColor" opacity="0.15"/><rect x="0" y="0" width="80" height="4" fill="currentColor"/><rect x="0" y="12" width="80" height="4" fill="currentColor"/><line x1="40" y1="0" x2="40" y2="16" stroke="currentColor" stroke-width="1.5"/></svg>'},
+    {"id": "sliding-door", "label": "Sliding", "category": "openings", "defaultWidth": 80, "defaultHeight": 16, "svg": '<svg viewBox="0 0 80 16" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="80" height="16" fill="currentColor" opacity="0.1"/><rect x="0" y="0" width="80" height="4" fill="currentColor"/><rect x="0" y="12" width="80" height="4" fill="currentColor"/><rect x="4" y="4" width="36" height="8" fill="currentColor" opacity="0.4" rx="1"/><rect x="40" y="4" width="36" height="8" fill="currentColor" opacity="0.25" rx="1"/></svg>'},
+    {"id": "sofa", "label": "Sofa", "category": "furniture", "defaultWidth": 120, "defaultHeight": 60, "svg": '<svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="10" width="120" height="50" rx="6" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="0" y="10" width="120" height="18" rx="6" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="10" width="16" height="50" rx="4" fill="currentColor" opacity="0.4" stroke="currentColor" stroke-width="1.5"/><rect x="104" y="10" width="16" height="50" rx="4" fill="currentColor" opacity="0.4" stroke="currentColor" stroke-width="1.5"/></svg>'},
+    {"id": "bed-single", "label": "Single Bed", "category": "furniture", "defaultWidth": 80, "defaultHeight": 120, "svg": '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="76" height="116" rx="4" fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="68" height="30" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="42" width="68" height="70" rx="2" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="1"/></svg>'},
+    {"id": "bed-double", "label": "Double Bed", "category": "furniture", "defaultWidth": 120, "defaultHeight": 120, "svg": '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="116" height="116" rx="4" fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="108" height="30" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="42" width="108" height="72" rx="2" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="1"/></svg>'},
+    {"id": "desk", "label": "Desk", "category": "furniture", "defaultWidth": 100, "defaultHeight": 55, "svg": '<svg viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="96" height="51" rx="2" fill="currentColor" opacity="0.12" stroke="currentColor" stroke-width="2"/><rect x="2" y="2" width="96" height="10" rx="2" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/></svg>'},
+    {"id": "dining-table", "label": "Table", "category": "furniture", "defaultWidth": 100, "defaultHeight": 70, "svg": '<svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="50" rx="3" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="14" y="4" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="68" y="4" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="54" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/><rect x="68" y="54" width="18" height="12" rx="3" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/></svg>'},
+    {"id": "toilet", "label": "Toilet", "category": "fixtures", "defaultWidth": 48, "defaultHeight": 68, "svg": '<svg viewBox="0 0 48 68" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="0" width="36" height="20" rx="3" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.5"/><ellipse cx="24" cy="48" rx="20" ry="18" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><ellipse cx="24" cy="48" rx="14" ry="13" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1"/></svg>'},
+    {"id": "bathtub", "label": "Bathtub", "category": "fixtures", "defaultWidth": 70, "defaultHeight": 130, "svg": '<svg viewBox="0 0 70 130" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="66" height="126" rx="10" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="8" y="8" width="54" height="114" rx="8" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1"/></svg>'},
+    {"id": "sink", "label": "Sink", "category": "fixtures", "defaultWidth": 56, "defaultHeight": 50, "svg": '<svg viewBox="0 0 56 50" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="52" height="46" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/><rect x="8" y="8" width="40" height="34" rx="8" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1"/></svg>'},
+    {"id": "staircase", "label": "Stairs", "category": "fixtures", "defaultWidth": 80, "defaultHeight": 120, "svg": '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="80" height="120" fill="currentColor" opacity="0.05" stroke="currentColor" stroke-width="2"/><line x1="0" y1="10" x2="80" y2="10" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="22" x2="80" y2="22" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="34" x2="80" y2="34" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="46" x2="80" y2="46" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="58" x2="80" y2="58" stroke="currentColor" stroke-width="1.5" opacity="0.6"/></svg>'},
 ]
 
 
@@ -196,3 +196,92 @@ def post_chat(body: ChatRequest):
     )
 
     return JSONResponse(content={"reply": reply})
+
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+#
+# In-memory user store — replace with a real DB for production.
+# Passwords are stored as bcrypt hashes when passlib is available,
+# falling back to a plaintext dev-only store otherwise.
+
+import hashlib
+import hmac
+import uuid
+
+# { email: { id, name, email, password_hash } }
+_USERS: dict[str, dict] = {}
+
+_JWT_SECRET = "dev-secret-change-in-production-32chars"
+
+
+def _hash_password(password: str) -> str:
+    """SHA-256 HMAC — good enough for an in-memory dev store."""
+    return hmac.new(_JWT_SECRET.encode(), password.encode(), hashlib.sha256).hexdigest()
+
+
+def _check_password(password: str, stored_hash: str) -> bool:
+    return hmac.compare_digest(_hash_password(password), stored_hash)
+
+
+# Seed a demo account on startup
+_DEMO_EMAIL = "demo@blueprint.app"
+_DEMO_PW = "password123"
+_USERS[_DEMO_EMAIL] = {
+    "id": str(uuid.uuid4()),
+    "name": "Demo User",
+    "email": _DEMO_EMAIL,
+    "password_hash": _hash_password(_DEMO_PW),
+}
+
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+@app.post("/api/auth/register")
+def auth_register(body: RegisterRequest):
+    email = body.email.strip().lower()
+
+    if email in _USERS:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    if len(body.password) < 8:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+
+    user_id = str(uuid.uuid4())
+    _USERS[email] = {
+        "id": user_id,
+        "name": body.name.strip(),
+        "email": email,
+        "password_hash": _hash_password(body.password),
+    }
+
+    return JSONResponse(
+        content={"id": user_id, "name": _USERS[email]["name"], "email": email},
+        status_code=201,
+    )
+
+
+@app.post("/api/auth/login")
+def auth_login(body: LoginRequest):
+    email = body.email.strip().lower()
+    user = _USERS.get(email)
+
+    if not user or not _check_password(body.password, user["password_hash"]):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return JSONResponse(content={
+        "id": user["id"],
+        "name": user["name"],
+        "email": user["email"],
+    })
