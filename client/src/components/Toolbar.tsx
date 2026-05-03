@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { CATEGORIES } from "@/lib/catalog";
 import { useCatalogue } from "@/lib/api";
-import { Birdhouse, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 
 export default function Toolbar() {
   const [activeCategory, setActiveCategory] = useState<string>("walls");
@@ -18,13 +18,6 @@ export default function Toolbar() {
 
   return (
     <aside className="toolbar">
-      <div className="toolbar-header">
-        <span className="toolbar-logo">
-          <Birdhouse />
-        </span>
-        <span className="toolbar-title">DecoraAI</span>
-      </div>
-
       <nav className="category-nav">
         {CATEGORIES.map((cat) => (
           <button

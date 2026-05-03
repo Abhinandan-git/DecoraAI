@@ -16,8 +16,15 @@ function snapToGrid(v: number) {
 
 export default function Canvas() {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { items, addItem, addImageItem, selectItem, selectedId, deleteItem } =
-    useCanvasStore();
+  const {
+    items,
+    addItem,
+    addImageItem,
+    selectItem,
+    selectedId,
+    deleteItem,
+    toggleLock,
+  } = useCanvasStore();
   const { items: catalogItems } = useCatalogue();
 
   const [zoom, setZoom] = useState(1);
@@ -60,13 +67,7 @@ export default function Canvas() {
     }
     if (e.button === 0) {
       const tag = (e.target as SVGElement).tagName;
-      if (
-        tag === "svg" ||
-        tag === "rect" ||
-        tag === "image" ||
-        tag === "defs" ||
-        tag === "pattern"
-      ) {
+      if (["svg", "rect", "image", "defs", "pattern"].includes(tag)) {
         selectItem(null);
         panning.current = true;
         lastPan.current = { x: e.clientX, y: e.clientY };
@@ -94,7 +95,7 @@ export default function Canvas() {
     };
   }, []);
 
-  // ── Drag-drop (toolbar SVG + chat image) ──────────────────────────────────
+  // ── Drop handler: SVG from toolbar OR image from chat ────────────────────
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
@@ -134,24 +135,27 @@ export default function Canvas() {
   // ── Keyboard shortcuts ───────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
-        if (
-          (e.target as HTMLElement).tagName !== "INPUT" &&
-          (e.target as HTMLElement).tagName !== "TEXTAREA"
-        ) {
-          deleteItem(selectedId);
-        }
+        deleteItem(selectedId);
       }
+      if (e.key === "Escape") selectItem(null);
+      if ((e.key === "l" || e.key === "L") && selectedId)
+        toggleLock(selectedId);
       if (e.key === "0" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         setZoom(1);
         setPan({ x: 60, y: 60 });
       }
-      if (e.key === "Escape") selectItem(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedId, deleteItem, selectItem]);
+  }, [selectedId, deleteItem, selectItem, toggleLock]);
+
+  // ── Selected item info ───────────────────────────────────────────────────
+  const selectedItem = items.find((i) => i.instanceId === selectedId);
 
   return (
     <div className="canvas-container">
@@ -190,7 +194,6 @@ export default function Canvas() {
           </pattern>
         </defs>
 
-        <rect width="100%" height="100%" fill="#f7f5f0" />
         <rect width="100%" height="100%" fill="url(#grid-dots)" />
         <rect width="100%" height="100%" fill="url(#grid-major)" />
 
@@ -208,51 +211,78 @@ export default function Canvas() {
         </g>
       </svg>
 
-      {/* HUD */}
+      {/* Zoom HUD */}
       <div className="canvas-hud">
         <button
           className="hud-btn"
-          onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z * 1.2))}
+          onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z + 0.15))}
         >
           <Plus size={14} />
         </button>
-        <button className="hud-btn" onClick={() => setZoom(1)}>
+        <button
+          className="hud-btn"
+          onClick={() => {
+            setZoom(1);
+            setPan({ x: 60, y: 60 });
+          }}
+        >
           {Math.round(zoom * 100)}%
         </button>
         <button
           className="hud-btn"
-          onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z * 0.8))}
+          onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - 0.15))}
         >
           <Minus size={14} />
         </button>
       </div>
 
+      {/* Empty state hint */}
       {items.length === 0 && (
         <div className="canvas-hint">
           <span>Drag elements from the toolbar to begin</span>
         </div>
       )}
 
-      {selectedId && (
+      {/* Selection context bar */}
+      {selectedItem && (
         <div className="selection-bar">
-          <span className="selection-label">
-            {items.find((i) => i.instanceId === selectedId)?.label}
+          {/* Item name + lock status */}
+          <span
+            className={`selection-label ${selectedItem.locked ? "selection-label--locked" : ""}`}
+          >
+            {selectedItem.locked ? "🔒" : "◈"} {selectedItem.label}
           </span>
-          <button
-            className="sel-btn"
-            onClick={() => {
-              const item = items.find((i) => i.instanceId === selectedId);
-              if (item)
+
+          {/* Only show rotate for unlocked items */}
+          {!selectedItem.locked && (
+            <button
+              className="sel-btn"
+              onClick={() =>
                 useCanvasStore
                   .getState()
-                  .rotateItem(selectedId, (item.rotation + 90) % 360);
-            }}
-          >
-            <RotateCw size={12} /> Rotate
-          </button>
+                  .rotateItem(
+                    selectedItem.instanceId,
+                    (selectedItem.rotation + 90) % 360,
+                  )
+              }
+            >
+              <RotateCw size={12} /> Rotate
+            </button>
+          )}
+
+          {/* Lock / unlock — only for image items */}
+          {selectedItem.kind === "image" && (
+            <button
+              className={`sel-btn ${selectedItem.locked ? "sel-btn--unlock" : "sel-btn--lock"}`}
+              onClick={() => toggleLock(selectedItem.instanceId)}
+            >
+              {selectedItem.locked ? "🔓 Unlock" : "🔒 Lock"}
+            </button>
+          )}
+
           <button
             className="sel-btn sel-delete"
-            onClick={() => deleteItem(selectedId)}
+            onClick={() => deleteItem(selectedItem.instanceId)}
           >
             <X size={12} /> Delete
           </button>

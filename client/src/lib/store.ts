@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { CatalogItem } from "./catalog";
 
-// ── Item types ────────────────────────────────────────────────────────────────
-
 export type PlacedItemKind = "svg" | "image";
 
 export interface PlacedItem {
@@ -14,17 +12,15 @@ export interface PlacedItem {
   width: number;
   height: number;
   rotation: number;
-  // svg items
   svg?: string;
-  // image items
   dataUrl?: string;
   label: string;
+  locked: boolean;
 }
 
 interface CanvasStore {
   items: PlacedItem[];
   selectedId: string | null;
-
   addItem: (catalogItem: CatalogItem, x: number, y: number) => void;
   addImageItem: (dataUrl: string, label: string, x: number, y: number) => void;
   moveItem: (instanceId: string, x: number, y: number) => void;
@@ -32,6 +28,7 @@ interface CanvasStore {
   rotateItem: (instanceId: string, rotation: number) => void;
   deleteItem: (instanceId: string) => void;
   selectItem: (instanceId: string | null) => void;
+  toggleLock: (instanceId: string) => void;
   clearCanvas: () => void;
 }
 
@@ -57,6 +54,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
           rotation: 0,
           svg: catalogItem.svg,
           label: catalogItem.label,
+          locked: false,
         },
       ],
       selectedId: instanceId,
@@ -79,24 +77,26 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
           rotation: 0,
           dataUrl,
           label,
+          locked: false,
         },
       ],
       selectedId: instanceId,
     }));
   },
 
-  moveItem: (instanceId, x, y) => {
+  moveItem: (instanceId, x, y) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.instanceId === instanceId ? { ...item, x, y } : item,
+        item.instanceId === instanceId && !item.locked
+          ? { ...item, x, y }
+          : item,
       ),
-    }));
-  },
+    })),
 
-  resizeItem: (instanceId, width, height) => {
+  resizeItem: (instanceId, width, height) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.instanceId === instanceId
+        item.instanceId === instanceId && !item.locked
           ? {
               ...item,
               width: Math.max(20, width),
@@ -104,29 +104,33 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
             }
           : item,
       ),
-    }));
-  },
+    })),
 
-  rotateItem: (instanceId, rotation) => {
+  rotateItem: (instanceId, rotation) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.instanceId === instanceId ? { ...item, rotation } : item,
+        item.instanceId === instanceId && !item.locked
+          ? { ...item, rotation }
+          : item,
       ),
-    }));
-  },
+    })),
 
-  deleteItem: (instanceId) => {
+  deleteItem: (instanceId) =>
     set((state) => ({
       items: state.items.filter((item) => item.instanceId !== instanceId),
       selectedId: state.selectedId === instanceId ? null : state.selectedId,
-    }));
-  },
+    })),
 
-  selectItem: (instanceId) => {
-    set({ selectedId: instanceId });
-  },
+  selectItem: (instanceId) => set({ selectedId: instanceId }),
 
-  clearCanvas: () => {
-    set({ items: [], selectedId: null });
-  },
+  toggleLock: (instanceId) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.instanceId === instanceId
+          ? { ...item, locked: !item.locked }
+          : item,
+      ),
+    })),
+
+  clearCanvas: () => set({ items: [], selectedId: null }),
 }));

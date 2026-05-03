@@ -41,3 +41,42 @@ export function useCatalogue(): UseCatalogueResult {
 
   return { items, loading, error };
 }
+
+interface UseBackgroundResult {
+  dataUrl: string | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export function useBackgroundImage(): UseBackgroundResult {
+  const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/background-image")
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data: { dataUrl?: string; error?: string }) => {
+        if (!cancelled) {
+          if (data.error) throw new Error(data.error);
+          setDataUrl(data.dataUrl ?? null);
+          setError(null);
+        }
+      })
+      .catch((err: Error) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { dataUrl, loading, error };
+}

@@ -2,10 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Birdhouse,
-  ChevronLeft,
-  ChevronRight,
-  Image,
+  Bot,
+  BotMessageSquare,
   MoveDiagonal,
   SendHorizontal,
 } from "lucide-react";
@@ -57,7 +55,7 @@ function ImageBubble({ message }: ImageBubbleProps) {
     <div className="chat-image-bubble">
       <div className="chat-image-prompt">
         <span className="chat-image-prompt-icon">
-          <Image />
+          <BotMessageSquare />
         </span>
         <span>{message.prompt}</span>
       </div>
@@ -87,10 +85,9 @@ function ImageBubble({ message }: ImageBubbleProps) {
 
 interface ChatPanelProps {
   isOpen: boolean;
-  onToggle: () => void;
 }
 
-export default function ChatPanel({ isOpen, onToggle }: ChatPanelProps) {
+export default function ChatPanel({ isOpen }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: makeId(),
@@ -198,22 +195,12 @@ export default function ChatPanel({ isOpen, onToggle }: ChatPanelProps) {
     <div
       className={`chat-panel ${isOpen ? "chat-panel--open" : "chat-panel--closed"}`}
     >
-      {/* Toggle tab */}
-      <button
-        className="chat-toggle"
-        onClick={onToggle}
-        title={isOpen ? "Close chat" : "Open chat"}
-      >
-        {isOpen ? <ChevronRight /> : <ChevronLeft />}
-        {!isOpen && <span className="chat-toggle-label">Chat</span>}
-      </button>
-
       {isOpen && (
         <>
           {/* Header */}
           <div className="chat-header">
             <span className="chat-header-icon">
-              <Birdhouse />
+              <Bot />
             </span>
             <span className="chat-header-title">Assistant</span>
             <span className="chat-header-hint">
