@@ -1,4 +1,30 @@
-fastapi>=0.136.1
-uvicorn>=0.46.0
-pillow>=10.0.0
-pydantic>=2.13.3
+# ── Web framework ─────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+pydantic[email]>=2.7.0          # EmailStr validation
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+python-jose[cryptography]>=3.3.0   # JWT sign / verify
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy[asyncio]>=2.0.30        # async ORM
+asyncpg>=0.29.0                    # PostgreSQL async driver
+
+# ── Image processing ──────────────────────────────────────────────────────────
+pillow>=10.0.0                      # grid fallback renderer
+
+# ── Diffusion (install separately — heavy, GPU optional) ─────────────────────
+# Uncomment once you have a GPU / want to enable the LoRA pipeline:
+#
+# torch>=2.3.0              # install the correct CUDA variant from pytorch.org
+# diffusers>=0.29.0
+# transformers>=4.41.0
+# accelerate>=0.30.0
+# safetensors>=0.4.3        # load .safetensors LoRA files
+# xformers>=0.0.26          # optional: memory-efficient attention on CUDA
+
+# ── Chat (uncomment whichever LLM backend you use) ───────────────────────────
+# openai>=1.30.0
+# anthropic>=0.28.0
