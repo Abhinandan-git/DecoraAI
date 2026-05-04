@@ -36,6 +36,17 @@ function makeId() {
   return `msg-${++msgCounter}`;
 }
 
+/** Generate a UUID v4 — used as session_id for the current browser session. */
+function makeSessionId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 const IMAGE_COMMAND = /^\/image\s+(.+)$/i;
 
 // ── Draggable image bubble ────────────────────────────────────────────────────
@@ -99,6 +110,8 @@ export default function ChatPanel({ isOpen }: ChatPanelProps) {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  // Stable session ID for this browser tab — groups messages in MongoDB
+  const sessionId = useRef<string>(makeSessionId());
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -129,10 +142,12 @@ export default function ChatPanel({ isOpen }: ChatPanelProps) {
         // ── /image command ────────────────────────────────────────────────────
         const prompt = imageMatch[1].trim();
 
-        const res = await fetch(
-          `/api/background-image?prompt=${encodeURIComponent(prompt)}`,
-          { cache: "no-store" },
-        );
+        const res = await fetch(`/api/background-image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, session_id: sessionId.current }),
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error(`Server error ${res.status}`);
         const data = await res.json();
 
@@ -150,7 +165,10 @@ export default function ChatPanel({ isOpen }: ChatPanelProps) {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text }),
+          body: JSON.stringify({
+            message: text,
+            session_id: sessionId.current,
+          }),
         });
         if (!res.ok) throw new Error(`Server error ${res.status}`);
         const data = await res.json();

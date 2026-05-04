@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
-import {Birdhouse} from "lucide-react";
+import { Birdhouse } from "lucide-react";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -32,7 +32,9 @@ export default function RegisterPage() {
     <div className="auth-screen">
       <div className="auth-card">
         <div className="auth-logo">
-          <span className="auth-logo-icon"><Birdhouse /></span>
+          <span className="auth-logo-icon">
+            <Birdhouse />
+          </span>
           <span className="auth-logo-text">DecoraAI</span>
         </div>
 
