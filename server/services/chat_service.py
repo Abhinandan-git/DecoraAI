@@ -1,19 +1,20 @@
 """
 services/chat_service.py
 -------------------------
-Stateless chat service.
+Async chat service with MongoDB-backed history.
 
-The frontend sends a single message; the backend is responsible for
-maintaining any conversation history, RAG context, or system prompts.
+Flow for each /api/chat call:
+  1. Load recent session history from MongoDB (text messages only)
+  2. Call the configured LLM with full context
+  3. Persist user message → MongoDB
+  4. Persist assistant reply → MongoDB
+  5. Return the reply
 
-To wire up a real LLM:
-  1. Set CHAT_ENABLED=true in .env
-  2. Uncomment + fill in the relevant provider block below
-  3. Add the provider's package to requirements.txt
-
-The function signature `get_reply(message: str) -> str` is the only
-contract the router depends on — internals can change freely.
+The router handles (3) and (4) explicitly so every message is saved
+even if something later in the pipeline fails.
 """
+
+from __future__ import annotations
 
 import logging
 
@@ -23,63 +24,68 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
-def get_reply(message: str) -> str:
+async def get_reply(message: str, history: list[dict]) -> str:
     """
-    Return an assistant reply for `message`.
-    Dispatches to whichever provider is configured.
+    Generate a reply given the current message and prior session history.
+
+    `history` is a list of {"role": ..., "content": ...} dicts produced by
+    message_service.get_session_context() — ready to pass straight to any
+    OpenAI-compatible or Anthropic API.
     """
     if not settings.chat_enabled:
         return _placeholder_reply(message)
 
     # ── OpenAI ───────────────────────────────────────────────────────────────
-    # Uncomment and set OPENAI_API_KEY + OPENAI_MODEL in .env
+    # 1. pip install openai
+    # 2. In .env: CHAT_ENABLED=true, OPENAI_API_KEY=sk-..., OPENAI_MODEL=gpt-4o
     #
     # try:
-    #     from openai import OpenAI
-    #     client = OpenAI(api_key=settings.openai_api_key)
-    #     completion = client.chat.completions.create(
+    #     from openai import AsyncOpenAI
+    #     client = AsyncOpenAI(api_key=settings.openai_api_key)
+    #     messages = [
+    #         {
+    #             "role": "system",
+    #             "content": (
+    #                 "You are a helpful floor plan and interior design assistant. "
+    #                 "Answer questions about layouts, dimensions, and room planning. "
+    #                 "Be concise and practical."
+    #             ),
+    #         },
+    #         *history,
+    #         {"role": "user", "content": message},
+    #     ]
+    #     completion = await client.chat.completions.create(
     #         model=settings.openai_model,
-    #         messages=[
-    #             {
-    #                 "role": "system",
-    #                 "content": (
-    #                     "You are a helpful floor plan and interior design assistant. "
-    #                     "Answer questions about layouts, dimensions, and room planning. "
-    #                     "Be concise and practical."
-    #                 ),
-    #             },
-    #             {"role": "user", "content": message},
-    #         ],
+    #         messages=messages,
     #     )
     #     return completion.choices[0].message.content or ""
     # except Exception as exc:
     #     logger.error("OpenAI error: %s", exc)
-    #     return f"⚠ Chat service error: {exc}"
+    #     return f"⚠ Chat error: {exc}"
 
     # ── Anthropic Claude ─────────────────────────────────────────────────────
-    # Uncomment and set ANTHROPIC_API_KEY in .env
+    # 1. pip install anthropic
+    # 2. In .env: CHAT_ENABLED=true, ANTHROPIC_API_KEY=sk-ant-...
     #
     # try:
     #     import anthropic
-    #     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-    #     message_obj = client.messages.create(
+    #     client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+    #     response = await client.messages.create(
     #         model="claude-3-5-sonnet-20241022",
     #         max_tokens=1024,
     #         system=(
     #             "You are a helpful floor plan and interior design assistant. "
     #             "Answer questions about layouts, dimensions, and room planning."
     #         ),
-    #         messages=[{"role": "user", "content": message}],
+    #         messages=[*history, {"role": "user", "content": message}],
     #     )
-    #     return message_obj.content[0].text
+    #     return response.content[0].text
     # except Exception as exc:
     #     logger.error("Anthropic error: %s", exc)
-    #     return f"⚠ Chat service error: {exc}"
+    #     return f"⚠ Chat error: {exc}"
 
     return _placeholder_reply(message)
 
-
-# ── Placeholder ───────────────────────────────────────────────────────────────
 
 def _placeholder_reply(message: str) -> str:
     return (

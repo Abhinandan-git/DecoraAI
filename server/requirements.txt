@@ -9,8 +9,10 @@ pydantic[email]>=2.7.0          # EmailStr validation
 python-jose[cryptography]>=3.3.0   # JWT sign / verify
 
 # ── Database ──────────────────────────────────────────────────────────────────
-sqlalchemy[asyncio]>=2.0.30        # async ORM
+sqlalchemy[asyncio]>=2.0.30        # async ORM (PostgreSQL / auth)
 asyncpg>=0.29.0                    # PostgreSQL async driver
+motor>=3.4.0                       # MongoDB async driver (Atlas)
+pymongo>=4.7.0                     # Motor depends on pymongo for index helpers
 
 # ── Image processing ──────────────────────────────────────────────────────────
 pillow>=10.0.0                      # grid fallback renderer

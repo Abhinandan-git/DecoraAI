@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import get_settings
 from db import init_db
+from mongo import connect as mongo_connect, disconnect as mongo_disconnect
 from routers import auth, catalogue, chat, image
 from services.image_service import load_pipeline, unload_pipeline
 
@@ -33,11 +34,13 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    await init_db()  # create tables if they don't exist
-    load_pipeline()  # load diffusion model (no-op if MODEL_ENABLED=false)
+    await init_db()  # PostgreSQL: create tables if missing
+    await mongo_connect()  # MongoDB Atlas: open connection pool + ensure indexes
+    load_pipeline()  # Diffusion model (no-op if MODEL_ENABLED=false)
     yield
     # Shutdown
     unload_pipeline()
+    await mongo_disconnect()
 
 
 # ── App factory ───────────────────────────────────────────────────────────────
@@ -48,10 +51,10 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         description=(
             "Backend API for the DecoraAI floor plan editor.\n\n"
-            "- **Auth** — JWT-based email/password authentication\n"
+            "- **Auth** — JWT-based email/password authentication (PostgreSQL)\n"
             "- **Catalogue** — SVG floor plan element library\n"
             "- **Image** — LoRA-augmented Stable Diffusion generation\n"
-            "- **Chat** — Pluggable LLM assistant\n"
+            "- **Chat** — Pluggable LLM assistant with MongoDB message history\n"
         ),
         docs_url="/docs",
         redoc_url="/redoc",
