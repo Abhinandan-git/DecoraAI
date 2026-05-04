@@ -2,7 +2,7 @@ import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "dev-secret-change-in-production-32chars",
+  process.env.JWT_SECRET ?? "dev-secret-change-in-production-at-least-32-chars",
 );
 
 export const COOKIE_NAME = "bp_token";
