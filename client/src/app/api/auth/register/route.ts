@@ -21,16 +21,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Backend returns { access_token, token_type, user: { id, name, email } }
+    const user = data.user ?? data; // graceful fallback for older shape
     const token = await signToken({
-      sub: data.id,
-      email: data.email,
-      name: data.name,
+      sub: user.id,
+      email: user.email,
+      name: user.name,
     });
 
     const response = NextResponse.json({
       ok: true,
-      name: data.name,
-      email: data.email,
+      name: user.name,
+      email: user.email,
     });
     response.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
